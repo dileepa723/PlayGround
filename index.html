@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0a14" />
+    <meta name="description" content="San Andreas: Neon State — an open-world driving tribute set in a modern San Andreas, built with Three.js." />
+    <title>San Andreas: Neon State — 2026</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2307070c%22/%3E%3Ctext x=%2232%22 y=%2246%22 font-family=%22Arial Black%22 font-size=%2234%22 text-anchor=%22middle%22 fill=%22%23ff2e7e%22%3ESA%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage" aria-hidden="true"></div>
+
+      <div id="hud">
+        <div class="hud-top-left">
+          <div class="minimap-wrap">
+            <canvas id="minimap" width="320" height="320"></canvas>
+            <div class="minimap-ring"></div>
+            <div class="minimap-north">N</div>
+          </div>
+          <div class="district-line">
+            <span id="district-name">NEON DISTRICT</span>
+            <span class="district-dot"></span>
+            <span id="clock">19:42</span>
+          </div>
+          <div class="cash-line"><span class="cash-symbol">$</span><span id="cash">12,450</span></div>
+        </div>
+
+        <div class="hud-top-right">
+          <div id="wanted" class="wanted" aria-label="Wanted level">
+            <span class="star" data-i="0">★</span><span class="star" data-i="1">★</span><span class="star" data-i="2">★</span><span class="star" data-i="3">★</span><span class="star" data-i="4">★</span>
+          </div>
+          <div id="mission-card" class="mission-card">
+            <div class="mission-eyebrow"><span class="pulse-dot"></span> ACTIVE JOB</div>
+            <div class="mission-title" id="mission-title">COURIER RUN</div>
+            <div class="mission-target"><span id="mission-target">Pick up the prototype cell</span></div>
+            <div class="mission-meta"><span id="mission-timer">02:00</span><span id="mission-distance">0 m</span></div>
+            <div class="mission-bar"><i id="mission-progress"></i></div>
+          </div>
+          <div class="radio-pill">
+            <span class="eq"><i></i><i></i><i></i><i></i></span>
+            <span>NEON FM 98.6</span>
+            <button id="mute-btn" class="icon-btn" aria-label="Toggle sound" title="Sound">♪</button>
+          </div>
+        </div>
+
+        <div class="hud-bottom-left">
+          <div class="stat-row">
+            <span class="stat-label">HEALTH</span>
+            <div class="stat-bar"><i id="health-bar"></i></div>
+            <span id="health-value" class="stat-value">100</span>
+          </div>
+          <div class="stat-row armor-row">
+            <span class="stat-label">ARMOR</span>
+            <div class="stat-bar armor"><i id="armor-bar"></i></div>
+            <span id="armor-value" class="stat-value">0</span>
+          </div>
+          <div class="hint-line"><kbd>WASD</kbd> MOVE <span class="sep">/</span> <kbd>SHIFT</kbd> SPRINT <span class="sep">/</span> <kbd>DRAG</kbd> LOOK</div>
+        </div>
+
+        <div class="hud-bottom-right">
+          <div id="vehicle-panel" class="vehicle-panel">
+            <div class="v-brand" id="v-brand">NEON MOTORS</div>
+            <div class="v-name" id="v-name">VOLT GT</div>
+            <div class="speedo">
+              <span id="speed">0</span><small>KM/H</small>
+              <div class="gear" id="gear">P</div>
+            </div>
+            <div class="v-meta">
+              <span id="v-class">ELECTRIC HYPERCAR</span>
+              <span id="v-mode">AWD</span>
+            </div>
+            <div class="battery"><i id="battery-bar"></i><span id="battery-value">100%</span></div>
+          </div>
+        </div>
+
+        <div id="interact" class="interact"><kbd>E</kbd><span id="interact-text">DRIVE</span></div>
+        <div id="toast-stack" class="toast-stack"></div>
+        <div id="vehicle-card" class="vehicle-card">
+          <div class="vc-eyebrow">NEW VEHICLE DISCOVERED</div>
+          <div class="vc-name" id="vc-name">VOLT GT</div>
+          <div class="vc-sub" id="vc-sub">ELECTRIC HYPERCAR</div>
+          <div class="vc-stats">
+            <div><label>TOP SPEED</label><b id="vc-speed">340</b><em>km/h</em></div>
+            <div><label>0–100</label><b id="vc-accel">2.1</b><em>s</em></div>
+            <div><label>HANDLING</label><b id="vc-handling">S</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="touch" class="touch-ui">
+        <div id="joystick" class="joystick"><div class="stick"><i></i></div></div>
+        <div class="touch-buttons">
+          <button id="touch-handbrake" class="touch-btn round" aria-label="Handbrake">HB</button>
+          <button id="touch-boost" class="touch-btn round boost" aria-label="Boost">⚡</button>
+          <button id="touch-action" class="touch-btn action" aria-label="Enter or exit vehicle">E</button>
+        </div>
+        <div class="pedals">
+          <button id="touch-brake" class="touch-btn pedal" aria-label="Brake">▼</button>
+          <button id="touch-gas" class="touch-btn pedal gas" aria-label="Accelerate">▲</button>
+        </div>
+      </div>
+
+      <div id="title" class="title-screen">
+        <div class="title-vignette"></div>
+        <div class="title-top">
+          <div class="brand-mark"><span class="mark-dot"></span> OM•PLAYGROUND <span class="brand-sep">/</span> 2026</div>
+          <div class="title-top-right"><span class="live-dot"></span> OPEN WORLD ONLINE</div>
+        </div>
+
+        <div class="title-content">
+          <div class="title-kicker">WELCOME BACK TO THE WEST COAST</div>
+          <h1 class="title-logo">
+            <span class="logo-san">SAN</span>
+            <span class="logo-andreas">ANDREAS</span>
+          </h1>
+          <div class="title-sub"><span>NEON STATE</span><i></i><span>MODERN VEHICLES</span><i></i><span>2026</span></div>
+          <p class="title-pitch">Seven electric machines. One city that never sleeps. Run the courier circuit, collect data shards, and outrun the APEX patrol through a reimagined San Andreas.</p>
+          <div class="title-actions">
+            <button id="play-btn" class="play-btn" aria-label="Play"><span>PLAY</span><small>ENTER THE CITY</small></button>
+          </div>
+          <div class="title-controls">
+            <div><kbd>W A S D</kbd><span>DRIVE / MOVE</span></div>
+            <div><kbd>E</kbd><span>ENTER / EXIT</span></div>
+            <div><kbd>SHIFT</kbd><span>BOOST / SPRINT</span></div>
+            <div><kbd>SPACE</kbd><span>HANDBRAKE</span></div>
+            <div><kbd>DRAG</kbd><span>LOOK AROUND</span></div>
+            <div><kbd>M</kbd><span>MUSIC</span></div>
+          </div>
+        </div>
+
+        <div class="title-footer">
+          <div class="title-stat"><b>07</b><span>MODERN VEHICLES</span></div>
+          <div class="title-stat"><b>25</b><span>CITY BLOCKS</span></div>
+          <div class="title-stat"><b>∞</b><span>FREE ROAM</span></div>
+          <div class="title-fine">A FAN-MADE THREE.JS TRIBUTE · NOT AFFILIATED WITH ROCKSTAR GAMES</div>
+        </div>
+      </div>
+
+      <div id="cinematic" class="cinematic">
+        <div class="cine-bar top"></div>
+        <div class="cine-bar bottom"></div>
+        <div class="cine-title" id="cine-title">NEON STATE</div>
+        <div class="cine-sub" id="cine-sub">LOS SANTOS, 2026</div>
+      </div>
+
+      <div id="flash" class="flash"></div>
+      <div id="busted" class="end-screen busted">
+        <div class="end-eyebrow">LOS SANTOS POLICE DEPARTMENT</div>
+        <div class="end-title">BUSTED</div>
+        <div class="end-sub">$500 IMPOUND FEE · WANTED LEVEL CLEARED</div>
+      </div>
+      <div id="wasted" class="end-screen wasted">
+        <div class="end-eyebrow">MEDICAL EMERGENCY</div>
+        <div class="end-title">WASTED</div>
+        <div class="end-sub">$250 HOSPITAL FEE · RESPAWNING</div>
+      </div>
+
+      <div class="scanlines" aria-hidden="true"></div>
+      <div id="loading" class="loading"><div class="load-mark"></div><span>BUILDING THE CITY</span></div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
