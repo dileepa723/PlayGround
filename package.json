@@ -1,0 +1,11 @@
+{
+  "name": "playground-gta-mobile-guide",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static guide to playing GTA V on mobile: what is official, what is fake, and how to stream it.",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node server.mjs"
+  }
+}
