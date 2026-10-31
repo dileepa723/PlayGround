@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#050305" />
+    <meta
+      name="description"
+      content="Knight Rider — a neon-night tribute to K.I.T.T., the Knight Industries Two Thousand. Interactive 3D scanner, turbo boost and onboard computer."
+    />
+    <title>Knight Rider — K.I.T.T. Online</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23060406'/%3E%3Crect x='10' y='28' width='44' height='8' rx='2' fill='%23100'/%3E%3Crect x='30' y='29' width='6' height='6' fill='%23ff2b1f'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="/assets/index-QQVcCXrz.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-rxAI_S84.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="Interactive three-dimensional scene of K.I.T.T. on a night highway" role="img"></canvas>
+
+      <div class="atmosphere" aria-hidden="true">
+        <div class="atmosphere__vignette"></div>
+        <div class="atmosphere__scanlines"></div>
+        <div class="atmosphere__grain"></div>
+      </div>
+
+      <div class="frame" aria-hidden="true">
+        <span class="frame__corner frame__corner--tl"></span>
+        <span class="frame__corner frame__corner--tr"></span>
+        <span class="frame__corner frame__corner--bl"></span>
+        <span class="frame__corner frame__corner--br"></span>
+      </div>
+
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Knight Rider home">
+          <span class="brand__scanner" aria-hidden="true">
+            <canvas id="brand-scanner" width="168" height="26"></canvas>
+          </span>
+          <span class="brand__copy">
+            <span class="brand__title">K.I.T.T.</span>
+            <span class="brand__sub">Knight Industries // 2000</span>
+          </span>
+        </a>
+
+        <div class="topbar__right">
+          <div class="system-status" aria-label="System status: online">
+            <span class="system-status__dot" aria-hidden="true"></span>
+            <span>All systems online</span>
+          </div>
+          <button class="icon-btn" id="sound-toggle" type="button" aria-pressed="false" aria-label="Enable sound">
+            <svg class="icon-btn__on" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9v6h4l5 4V5L8 9H4z" />
+              <path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              <path d="M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+            <svg class="icon-btn__off" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9v6h4l5 4V5L8 9H4z" />
+              <path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+            <span class="icon-btn__label">Sound</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="hero">
+        <div class="hero__copy">
+          <p class="eyebrow"><span class="eyebrow__line"></span>Knight Industries presents</p>
+          <h1 class="title">
+            <span class="title__line title__line--solid">Knight</span>
+            <span class="title__line title__line--outline">Rider</span>
+          </h1>
+          <p class="tagline">One man. One machine. <em>No limits.</em></p>
+
+          <dl class="specs">
+            <div class="specs__item">
+              <dt>Top speed</dt>
+              <dd><span>480</span> kph</dd>
+            </div>
+            <div class="specs__item">
+              <dt>Artificial intelligence</dt>
+              <dd>MK <span>IV</span></dd>
+            </div>
+            <div class="specs__item">
+              <dt>Threat level</dt>
+              <dd><span id="threat">0.00</span></dd>
+            </div>
+          </dl>
+        </div>
+
+        <p class="orbit-hint" id="orbit-hint" aria-hidden="true">
+          <span class="orbit-hint__icon"></span>Drag to orbit
+        </p>
+      </main>
+
+      <section class="comms" aria-label="K.I.T.T. voice interface">
+        <div class="comms__top">
+          <span class="comms__id"><i class="live-dot" aria-hidden="true"></i>K.I.T.T. // Voice interface</span>
+          <button class="comms__speak" id="speak-btn" type="button" aria-label="Hear K.I.T.T. speak the current message" title="Hear K.I.T.T.">
+            <span class="wave" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </span>
+          </button>
+        </div>
+        <p class="comms__line" id="kitt-line" aria-live="polite">
+          <span class="comms__prompt" aria-hidden="true">&gt;</span><span id="kitt-text"></span><span class="caret" aria-hidden="true"></span>
+        </p>
+      </section>
+
+      <section class="controls" aria-label="Vehicle controls">
+        <div class="toggles">
+          <button class="toggle" id="lights-btn" type="button" aria-pressed="true">Headlights <span class="toggle__state">on</span></button>
+          <span class="toggles__divider" aria-hidden="true"></span>
+          <span class="toggles__note">Sector 09 // Night run</span>
+        </div>
+
+        <div class="console">
+          <div class="speed" id="speed-block">
+            <div class="speed__dial" aria-hidden="true">
+              <span class="speed__ticks"></span>
+            </div>
+            <div class="speed__readout">
+              <span class="speed__value" id="speed-value">092</span>
+              <span class="speed__unit">KPH</span>
+            </div>
+            <span class="speed__label" id="drive-state">Cruise</span>
+          </div>
+
+          <button class="turbo" id="turbo-btn" type="button" aria-label="Engage turbo boost">
+            <span class="turbo__halo" aria-hidden="true"></span>
+            <span class="turbo__inner">
+              <span class="turbo__label">Turbo<br />Boost</span>
+              <kbd class="turbo__key">Space</kbd>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <div class="boost-overlay" id="boost-overlay" aria-hidden="true">
+        <div class="boost-overlay__lines"></div>
+        <div class="boost-overlay__flash"></div>
+        <p class="boost-overlay__word">Turbo boost</p>
+      </div>
+
+      <div class="boot" id="boot" role="status" aria-label="Initializing K.I.T.T.">
+        <div class="boot__scan" aria-hidden="true"><canvas id="boot-scanner" width="360" height="48"></canvas></div>
+        <p class="boot__text">Establishing connection</p>
+        <div class="boot__bar"><span id="boot-progress"></span></div>
+        <p class="boot__meta">KNIGHT INDUSTRIES TWO THOUSAND <span id="boot-percent">0%</span></p>
+      </div>
+
+      <div class="fallback" id="fallback" hidden>
+        <div class="fallback__panel">
+          <span class="fallback__code">ERR // VISUAL SYSTEM OFFLINE</span>
+          <h2>K.I.T.T. is running in safe mode.</h2>
+          <p>The 3D scanner could not start. All other systems remain operational.</p>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
