@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayGround — Arcade Kart &amp; Unity Vehicle Game</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1b2340 0%, #0b0e17 55%, #07080d 100%);
+    color: #e8ecf4; min-height: 100vh;
+  }
+  a { color: #7ddcfa; }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 28px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .logo { width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, #ff4747, #ffb43c 60%, #ffe14d);
+    box-shadow: 0 0 18px rgba(255,120,60,.45); }
+  header h1 { font-size: 17px; letter-spacing: .02em; }
+  header h1 span { color: #8b93a7; font-weight: 400; }
+  .badge { margin-left: auto; font-size: 12px; color: #93f5c8; border: 1px solid rgba(147,245,200,.35);
+    padding: 4px 10px; border-radius: 999px; background: rgba(147,245,200,.07); }
+  .hero { max-width: 1120px; margin: 34px auto 0; padding: 0 20px; }
+  h2 { font-size: 32px; line-height: 1.15; }
+  h2 em { font-style: normal; background: linear-gradient(90deg, #7ddcfa, #b39cff);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { margin-top: 10px; color: #a7afc2; font-size: 15px; max-width: 68ch; }
+  .stage { margin-top: 22px; border: 1px solid rgba(255,255,255,.1); border-radius: 16px;
+    background: #10131c; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+  canvas#track { display: block; width: 100%; height: auto; background: #14171f; }
+  .hudbar { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
+    padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.08); background: #0d1017; }
+  .stat { font-variant-numeric: tabular-nums; font-size: 13px; color: #8b93a7; }
+  .stat b { display: inline-block; color: #fff; font-size: 15px; transition: transform .18s ease; }
+  .stat.c b { color: #ffd75e; }
+  .autodrive { display: none; font-size: 12px; color: #7ddcfa; border: 1px solid rgba(125,220,250,.4);
+    padding: 3px 9px; border-radius: 999px; background: rgba(125,220,250,.08); }
+  .keys { margin-left: auto; color: #8b93a7; font-size: 12.5px; }
+  .keys kbd { background: #1b2030; border: 1px solid #2c3450; border-bottom-width: 2px;
+    border-radius: 5px; padding: 1px 7px; font-family: inherit; font-size: 11.5px; color: #dfe5f2; }
+  .cards { max-width: 1120px; margin: 30px auto 0; padding: 0 20px 6px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .card { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 18px;
+    background: rgba(255,255,255,.03); }
+  .card h3 { font-size: 15px; color: #fff; margin-bottom: 8px; }
+  .card p { font-size: 13.5px; color: #a7afc2; line-height: 1.55; }
+  .card code { background: #161b28; border: 1px solid #262d42; border-radius: 6px;
+    padding: 1px 6px; font-size: 12px; color: #9fd6ff; }
+  footer { max-width: 1120px; margin: 26px auto 40px; padding: 0 20px; color: #6e7688; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <h1>PlayGround <span>· arcade kart + unity vehicle game</span></h1>
+  <div class="badge">● live</div>
+</header>
+
+<main class="hero">
+  <h2>Take the kart for a spin <em>— right in the browser</em>.</h2>
+  <p class="lede">This playground hosts a Unity C# vehicle game: an arcade lap racer with gates,
+     coins, boost and drift. While the editor build runs in Unity, the demo below ports the same
+     ruleset to canvas 2D — kart autodrives a demo lap until you press a key. Then it is yours.</p>
+
+  <div class="stage">
+    <canvas id="track" width="1080" height="420" aria-label="Arcade kart demo"></canvas>
+    <div class="hudbar">
+      <div class="stat">SPEED <b id="speed">0</b> <span>km/h</span></div>
+      <div class="stat c">COINS <b id="coins">0</b></div>
+      <div class="autodrive" id="autodrive">AUTODRIVE DEMO LAP</div>
+      <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows drive
+        · <kbd>Shift</kbd> boost · <kbd>Space</kbd> drift</div>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Arcade VehicleController</h3>
+      <p>Hand-tuned <code>Rigidbody</code> physics with speed-capped throttle, drift grip,
+         boost fuel and respawn — drop into any Unity project. Same feel as the kart above.</p>
+    </div>
+    <div class="card">
+      <h3>One-click demo scene</h3>
+      <p><code>Tools ▸ Vehicle Game ▸ Build Demo Scene</code> generates the oval track,
+         eight gates, coins, ramps and a full HUD from primitives — zero assets needed.</p>
+    </div>
+    <div class="card">
+      <h3>Gates, laps &amp; records</h3>
+      <p><code>RaceManager</code> runs the countdown, validates gate order, times laps and
+         persists your best run via <code>PlayerPrefs</code>.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Web source in <code>web/</code> · built to <code>dist/</code> by <code>start.sh</code> ·
+  Unity scripts in <code>unity-vehicle-game/Assets/Scripts</code>.
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ================= Track geometry =================
+  var canvas = document.getElementById('track');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var MARGIN_X = 120, MARGIN_Y = 88, RADIUS = 90, RING = 56;
+  var PATH = roundedRectPath(MARGIN_X, MARGIN_Y, W - 2 * MARGIN_X, H - 2 * MARGIN_Y, RADIUS);
+  var PTS = samplePath(PATH, 6);
+  var N = PTS.length;
+
+  function roundedRectPath(x, y, w, h, r) {
+    return [
+      { t: 'm', x: x + r, y: y },
+      { t: 'l', x: x + w - r, y: y },
+      { t: 'a', cx: x + w - r, cy: y + r, r: r, a0: -Math.PI / 2, a1: 0 },
+      { t: 'l', x: x + w, y: y + h - r },
+      { t: 'a', cx: x + w - r, cy: y + h - r, r: r, a0: 0, a1: Math.PI / 2 },
+      { t: 'l', x: x + r, y: y + h },
+      { t: 'a', cx: x + r, cy: y + h - r, r: r, a0: Math.PI / 2, a1: Math.PI },
+      { t: 'l', x: x, y: y + r },
+      { t: 'a', cx: x + r, cy: y + r, r: r, a0: Math.PI, a1: 1.5 * Math.PI }
+    ];
+  }
+
+  function samplePath(path, step) {
+    var out = [];
+    for (var i = 0; i < path.length; i++) {
+      var s = path[i];
+      if (s.t === 'm' || s.t === 'l') out.push({ x: s.x, y: s.y });
+      else {
+        var arcLen = Math.abs(s.a1 - s.a0) * s.r;
+        var steps = Math.max(2, Math.ceil(arcLen / step));
+        for (var k = 0; k < steps; k++) {
+          var a = s.a0 + (s.a1 - s.a0) * (k / steps);
+          out.push({ x: s.cx + Math.cos(a) * s.r, y: s.cy + Math.sin(a) * s.r });
+        }
+      }
+    }
+    return out;
+  }
+
+  function strokeRing(width, style, dash) {
+    ctx.beginPath();
+    for (var i = 0; i < PATH.length; i++) {
+      var s = PATH[i];
+      if (i === 0) ctx.moveTo(s.x, s.y);
+      else if (s.t === 'l') ctx.lineTo(s.x, s.y);
+      else if (s.t === 'a') ctx.arc(s.cx, s.cy, s.r, s.a0, s.a1);
+    }
+    ctx.closePath();
+    if (dash) ctx.setLineDash(dash); else ctx.setLineDash([]);
+    ctx.lineWidth = width;
+    ctx.strokeStyle = style;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ================= State =================
+  var car = { f: 40, x: 0, y: 0, heading: 0, speed: 0 };
+  var ghost = { f: 280, x: 0, y: 0, heading: 0 };
+  var CAR_W = 36, CAR_H = 19;
+  var KPH_TO_PXS = 1.05;        // convert kph-ish units to pixels per second
+  var INDEX_TO_PXS = 6;         // sampled centerline step in px -> index speed factor
+  var score = 0;
+  var coins = [];
+  var driftMarks = [];
+
+  function placeCarOnIndex(f) {
+    var p = PTS[Math.floor(f)];
+    car.x = p.x; car.y = p.y;
+  }
+
+  function spawnCoin(avoidNear) {
+    for (var guard = 0; guard < 60; guard++) {
+      var idx = Math.floor(Math.random() * N);
+      if (avoidNear !== undefined) {
+        var d = Math.abs(idx - avoidNear), dl = Math.min(d, N - d);
+        if (dl < 30) continue;
+      }
+      return { x: PTS[idx].x, y: PTS[idx].y, t: Math.random() * 6.28 };
+    }
+    return { x: PTS[0].x, y: PTS[0].y, t: 0 };
+  }
+  for (var c = 0; c < 10; c++) coins.push(spawnCoin());
+
+  var speedEl = document.getElementById('speed');
+  var coinsEl = document.getElementById('coins');
+  var autoEl = document.getElementById('autodrive');
+
+  // ================= Input =================
+  var keys = {};
+  var lastPlayerInput = -1e9;
+  var KEYMAP = {
+    ArrowUp: 'up', w: 'up', W: 'up',
+    ArrowDown: 'down', s: 'down', S: 'down',
+    ArrowLeft: 'left', a: 'left', A: 'left',
+    ArrowRight: 'right', d: 'right', D: 'right',
+    ' ': 'drift', Shift: 'boost'
+  };
+  window.addEventListener('keydown', function (e) {
+    var k = KEYMAP[e.key];
+    if (k) {
+      keys[k] = true;
+      lastPlayerInput = performance.now();
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', function (e) {
+    var k = KEYMAP[e.key];
+    if (k) keys[k] = false;
+  });
+
+  // ================= Helpers =================
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; }
+
+  function turnToward(a, b, maxStep) {
+    var d = ((b - a) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+    return a + clamp(d, -maxStep, maxStep);
+  }
+
+  function nearestTrackInfo(x, y) {
+    var best = 0, bd = Infinity;
+    for (var i = 0; i < N; i++) {
+      var d = dist(PTS[i].x, PTS[i].y, x, y);
+      if (d < bd) { bd = d; best = i; }
+    }
+    return { index: best, dist: Math.sqrt(bd) };
+  }
+
+  // ================= Simulation =================
+  function step(dt, now) {
+    var autodrive = now - lastPlayerInput > 2500;
+    autoEl.style.display = autodrive ? 'inline-block' : 'none';
+
+    if (autodrive) {
+      car.speed = Math.min(car.speed + 90 * dt, 150);
+      car.f = (car.f + dt * car.speed * (KPH_TO_PXS / INDEX_TO_PXS)) % N;
+      placeCarOnIndex(car.f);
+      var ahead = PTS[(Math.floor(car.f) + 10) % N];
+      car.heading = turnToward(car.heading, Math.atan2(ahead.y - car.y, ahead.x - car.x), 4.5 * dt);
+    } else {
+      var throttle = (keys.up ? 1 : 0) - (keys.down ? 0.5 : 0);
+      var boosting = keys.boost && car.speed > 5;
+      car.speed += throttle * (boosting ? 320 : 210) * dt;
+      if (keys.down && car.speed < -40) car.speed = -40;
+      car.speed *= Math.pow(0.55, dt);        // gentle rolling drag
+
+      onTrackInfo = nearestTrackInfo(car.x, car.y);
+      var onRing = onTrackInfo.dist < RING / 2 + 8;
+      if (!onRing) car.speed *= Math.pow(0.35, dt);   // grass slows you down
+
+      var steer = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+      var grip = keys.drift ? 3.1 : 2.3;
+      var authority = clamp(Math.abs(car.speed) / 60, 0, 1);
+      car.heading += steer * grip * authority * dt * (car.speed < 0 ? -1 : 1);
+
+      var nx = car.x + Math.cos(car.heading) * car.speed * KPH_TO_PXS * dt;
+      var ny = car.y + Math.sin(car.heading) * car.speed * KPH_TO_PXS * dt;
+      var wall = 20;
+      if (nx > MARGIN_X - RING / 2 - wall && nx < W - MARGIN_X + RING / 2 + wall &&
+          ny > MARGIN_Y - RING / 2 - wall && ny < H - MARGIN_Y + RING / 2 + wall) {
+        car.x = nx; car.y = ny;
+      } else {
+        car.speed *= 0.4;   // run-off wall: bounce back gently
+      }
+
+      // skid marks while drifting (visual only)
+      if (keys.drift && Math.abs(steer) > 0 && Math.abs(car.speed) > 60 && onRing) {
+        driftMarks.push({ x: car.x, y: car.y, life: 1 });
+        if (driftMarks.length > 90) driftMarks.shift();
+      }
+    }
+
+    for (var i = 0; i < driftMarks.length; i++) {
+      driftMarks[i].life -= dt * 0.7;
+      if (driftMarks[i].life <= 0) { driftMarks.splice(i, 1); i--; }
+    }
+
+    // collect coins
+    for (var j = 0; j < coins.length; j++) {
+      var cn = coins[j];
+      if (dist(cn.x, cn.y, car.x, car.y) < 30 * 30) {
+        score++;
+        coinsEl.textContent = score;
+        bump(coinsEl);
+        coins[j] = spawnCoin(Math.floor(car.f));
+      }
+    }
+
+    // ghost kart cruises the other way for a bit of life
+    ghost.f = (ghost.f - dt * 28 + N) % N;
+    var gp = PTS[Math.floor(ghost.f)];
+    ghost.x = gp.x; ghost.y = gp.y;
+    var gp2 = PTS[(Math.floor(ghost.f) + N - 4) % N];
+    ghost.heading = Math.atan2(gp2.y - ghost.y, gp2.x - ghost.x);
+
+    speedEl.textContent = Math.round(Math.abs(car.speed));
+  }
+
+  var onTrackInfo = { index: 0, dist: 0 };
+
+  function bump(el) {
+    el.style.transform = 'scale(1.4)';
+    setTimeout(function () { el.style.transform = ''; }, 180);
+  }
+
+  // ================= Rendering =================
+  function draw() {
+    var bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#141824'); bg.addColorStop(1, '#0e111a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    for (var sx = 42; sx < W; sx += 42) {
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.fillRect(sx, 22, 2, H - 44);
+    }
+
+    strokeRing(RING, '#252b3a');
+    strokeRing(RING - 5, '#2e3548');
+    strokeRing(2, 'rgba(255,255,255,0.2)', [16, 26]);
+
+    // skid marks
+    for (var i = 0; i < driftMarks.length; i++) {
+      var m = driftMarks[i];
+      ctx.fillStyle = 'rgba(20,20,25,' + (0.35 * m.life) + ')';
+      ctx.beginPath(); ctx.arc(m.x, m.y, 4, 0, 6.29); ctx.fill();
+    }
+
+    var now = performance.now() / 1000;
+    for (var j = 0; j < coins.length; j++) {
+      var cn = coins[j];
+      var pulse = 5 + Math.sin(now * 3 + cn.t) * 1.3;
+      ctx.beginPath(); ctx.arc(cn.x, cn.y, pulse + 4, 0, 6.29);
+      ctx.fillStyle = 'rgba(255,204,74,0.2)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cn.x, cn.y, pulse, 0, 6.29);
+      ctx.fillStyle = '#ffcc4a'; ctx.fill();
+      ctx.fillStyle = '#a8791a'; ctx.fillRect(cn.x - 1, cn.y - pulse + 2, 2, Math.max(2, pulse * 2 - 4));
+    }
+
+    drawKart(ghost.x, ghost.y, ghost.heading, '#57d0ff', '#11283a');
+    drawKart(car.x, car.y, car.heading, '#ff4a4a', '#2b1717');
+  }
+
+  function drawKart(x, y, heading, body, glass) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(heading);
+    ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+    ctx.fillStyle = body;
+    roundRectPathOn(ctx, -CAR_W / 2 + 3, -CAR_H / 2 + 1, CAR_W - 6, CAR_H - 2, 7);
+    ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.fillStyle = glass;
+    roundRectPathOn(ctx, 0, -CAR_H / 2 + 4, 10, CAR_H - 8, 3);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillRect(-CAR_W / 2 + 5, -CAR_H / 2 + 3, 4, 3);
+    ctx.fillRect(-CAR_W / 2 + 5, CAR_H / 2 - 6, 4, 3);
+    ctx.restore();
+  }
+
+  function roundRectPathOn(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  // ================= Loop =================
+  placeCarOnIndex(car.f);
+  var ahead0 = PTS[(Math.floor(car.f) + 10) % N];
+  car.heading = Math.atan2(ahead0.y - car.y, ahead0.x - car.x);
+  var prev = performance.now();
+  function frame(now) {
+    var dt = Math.min((now - prev) / 1000, 0.05);
+    prev = now;
+    step(dt, now);
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
