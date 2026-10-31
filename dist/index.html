@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#05030a" />
+    <meta name="description" content="Knight Rider 3D — a neon highway pursuit game starring K.I.T.T. Drive, boost, and laser down the Foundation convoy." />
+    <title>KNIGHT RIDER 3D — K.I.T.T. Protocol</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307090f'/%3E%3Crect x='10' y='27' width='44' height='10' rx='4' fill='%23220a0e'/%3E%3Crect x='13' y='29' width='7' height='6' rx='2' fill='%23ff2438'/%3E%3Crect x='22' y='29' width='7' height='6' rx='2' fill='%23ff2438'/%3E%3Crect x='31' y='29' width='7' height='6' rx='2' fill='%23ff2438'/%3E%3Crect x='40' y='29' width='7' height='6' rx='2' fill='%23ff2438'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="./assets/index-DCbpq_eW.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-wSUvy4Er.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="Knight Rider 3D game scene"></canvas>
+      <div id="vignette"></div>
+      <div id="grain"></div>
+      <div id="damageFlash"></div>
+
+      <!-- ============ IN-GAME HUD ============ -->
+      <div id="hud" class="hidden" aria-live="polite">
+        <div class="hud-top">
+          <div class="mission-panel panel">
+            <div class="mission-kicker"><span class="dot"></span> KNIGHT FOUNDATION <span class="slash">/</span> MOBILE UNIT</div>
+            <div class="mission-name" id="missionName">PURSUIT PROTOCOL</div>
+            <div class="mission-stats">
+              <div class="stat"><span class="stat-label">MISSION TIME</span><span class="stat-value" id="timer">02:00</span></div>
+              <div class="stat"><span class="stat-label">DISTANCE</span><span class="stat-value" id="distance">0.00 MI</span></div>
+            </div>
+          </div>
+
+          <div class="score-panel">
+            <div class="score-label">SCORE</div>
+            <div class="score-value" id="score">000000</div>
+            <div class="combo" id="combo"></div>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <button class="icon-btn" id="soundBtn" title="Toggle sound" aria-label="Toggle sound">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path id="soundWaves" d="M16 8.5a5 5 0 0 1 0 7M18.6 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path id="soundMute" class="hidden" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-btn" id="pauseBtn" title="Pause" aria-label="Pause">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+          </button>
+        </div>
+
+        <div class="target-lock" id="targetLock">
+          <div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div>
+          <span id="targetText">NO TARGET</span>
+        </div>
+
+        <div class="toast-stack" id="toastStack"></div>
+
+        <div class="hud-bottom">
+          <div class="defense panel">
+            <div class="micro-label">MOLECULAR BONDED SHELL</div>
+            <div class="shield-row" id="shieldRow">
+              <i></i><i></i><i></i><i></i>
+            </div>
+            <div class="shield-num"><span id="shieldValue">100</span><small>%</small></div>
+            <div class="bar-label">TURBO</div>
+            <div class="meter turbo-meter"><div id="turboFill"></div><div class="meter-ticks"></div></div>
+          </div>
+
+          <div class="speed-panel">
+            <div class="scanner-hud" id="scannerHud" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="speed-ring" id="speedRing" style="--p:0">
+              <div class="speed-ticks"></div>
+              <div class="speed-inner">
+                <div class="speed-number" id="speedNumber">0</div>
+                <div class="speed-unit">MPH</div>
+                <div class="gear" id="gearLabel">P</div>
+              </div>
+            </div>
+            <div class="speed-caption"><span>K.I.T.T.</span><span>KNIGHT INDUSTRIES TWO THOUSAND</span></div>
+          </div>
+
+          <div class="pursuit panel" id="pursuitPanel">
+            <div class="micro-label">PURSUIT SYSTEMS</div>
+            <div class="pursuit-row"><span class="kos">KOS</span><span id="kosState">STANDBY</span></div>
+            <div class="pursuit-row"><span class="lazer">LASER</span><span id="laserState">READY</span></div>
+            <div class="pursuit-row"><span class="heat">HEAT</span><span id="heatState">COLD</span></div>
+            <div class="pursuit-hint" id="pursuitHint">F / TAP TO FIRE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TITLE SCREEN ============ -->
+      <div id="startScreen" class="screen">
+        <div class="start-glow"></div>
+        <div class="start-top">
+          <div class="kf-mark"><span class="kf-bars"><i></i><i></i><i></i></span> KNIGHT INDUSTRIES</div>
+          <div class="start-top-right">KF-3D <span>/</span> 1982 <span>/</span> NEVADA</div>
+        </div>
+
+        <div class="title-block">
+          <div class="eyebrow"><span class="line"></span> A KNIGHT FOUNDATION PURSUIT SIMULATION · 3D <span class="line"></span></div>
+          <h1 class="title">
+            <span class="title-knight">KNIGHT</span>
+            <span class="title-rider">RIDER</span>
+          </h1>
+          <div class="scanner-strip" id="titleScanner" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p class="tagline">One man. One machine. A highway full of trouble.</p>
+          <p class="blurb">Take the wheel of K.I.T.T. — turbo through the Nevada night,<br />collect Foundation data cores, and laser the interceptors off the road.</p>
+
+          <button id="startBtn" class="start-btn">
+            <span class="start-btn-inner">
+              <span class="start-icon">▶</span>
+              <span class="start-copy"><strong>ENGAGE</strong><small>PRESS ENTER / TAP</small></span>
+              <span class="start-scan"><i></i></span>
+            </span>
+          </button>
+
+          <div class="controls-grid">
+            <div class="ctrl"><kbd>W</kbd><kbd>↑</kbd><span>THROTTLE</span></div>
+            <div class="ctrl"><kbd>A</kbd><kbd>D</kbd><span>STEER</span></div>
+            <div class="ctrl"><kbd>SHIFT</kbd><span>TURBO</span></div>
+            <div class="ctrl"><kbd>F</kbd><kbd>CLICK</kbd><span>LASER</span></div>
+            <div class="ctrl"><kbd>P</kbd><span>PAUSE</span></div>
+          </div>
+        </div>
+
+        <div class="start-side">
+          <div class="side-rule"></div>
+          <div class="side-meta">UNIT <b>K.I.T.T.</b><br />KNIGHT INDUSTRIES TWO THOUSAND<br />AI: <b>ONLINE</b><br />MOLECULAR BONDED SHELL: <b>ARMED</b></div>
+          <div class="side-rule"></div>
+          <div class="side-meta dim">FAN-MADE TRIBUTE<br />BUILT WITH THREE.JS<br />UNITY BUILD INCLUDED</div>
+        </div>
+
+        <div class="start-bottom">
+          <span>◈ AUDIO RECOMMENDED — HEADPHONES ON</span>
+          <span class="start-bottom-right">WEBGL · 60FPS · NO INSTALL</span>
+        </div>
+      </div>
+
+      <!-- ============ PAUSE ============ -->
+      <div id="pauseScreen" class="screen modal hidden">
+        <div class="modal-card">
+          <div class="modal-kicker">SYSTEM HOLD</div>
+          <h2>PAUSED</h2>
+          <div class="scanner-strip small" id="pauseScanner" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <p class="modal-copy">K.I.T.T. is holding position. The convoy won't wait forever.</p>
+          <div class="modal-actions">
+            <button class="btn primary" id="resumeBtn">RESUME</button>
+            <button class="btn ghost" id="quitBtn">ABORT MISSION</button>
+          </div>
+          <div class="modal-hint">PRESS P OR ESC TO RESUME</div>
+        </div>
+      </div>
+
+      <!-- ============ GAME OVER ============ -->
+      <div id="overScreen" class="screen modal hidden">
+        <div class="modal-card wide">
+          <div class="modal-kicker" id="overKicker">MISSION DEBRIEF</div>
+          <h2 id="overTitle">K.I.T.T. DISABLED</h2>
+          <div class="scanner-strip small danger" id="overScanner" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="debrief">
+            <div class="debrief-stat"><span>SCORE</span><strong id="finalScore">0</strong></div>
+            <div class="debrief-stat"><span>DISTANCE</span><strong id="finalDistance">0.00 MI</strong></div>
+            <div class="debrief-stat"><span>TOP SPEED</span><strong id="finalSpeed">0 MPH</strong></div>
+            <div class="debrief-stat"><span>INTERCEPTORS</span><strong id="finalKills">0</strong></div>
+            <div class="debrief-stat"><span>DATA CORES</span><strong id="finalCores">0</strong></div>
+            <div class="debrief-stat"><span>BEST COMBO</span><strong id="finalCombo">x1</strong></div>
+          </div>
+          <div class="rank-line">RATING <strong id="finalRank">C</strong><span id="finalQuote">“Not bad for a machine.”</span></div>
+          <div class="modal-actions">
+            <button class="btn primary" id="restartBtn">DRIVE AGAIN</button>
+            <button class="btn ghost" id="menuBtn">MAIN MENU</button>
+          </div>
+          <div class="modal-hint">PRESS ENTER TO RESTART</div>
+        </div>
+      </div>
+
+      <!-- ============ MOBILE CONTROLS ============ -->
+      <div id="touchControls" class="hidden">
+        <div class="touch-steer">
+          <button class="touch-btn steer left" data-touch="left" aria-label="Steer left">◀</button>
+          <button class="touch-btn steer right" data-touch="right" aria-label="Steer right">▶</button>
+        </div>
+        <div class="touch-actions">
+          <button class="touch-btn brake" data-touch="brake" aria-label="Brake">BRAKE</button>
+          <button class="touch-btn boost" data-touch="boost" aria-label="Turbo boost">TURBO</button>
+          <button class="touch-btn fire" data-touch="fire" aria-label="Fire laser">FIRE</button>
+        </div>
+      </div>
+
+      <div id="rotateHint" class="hidden">
+        <div class="rotate-card">
+          <div class="rotate-icon">⟳</div>
+          <strong>ROTATE DEVICE</strong>
+          <span>For the best K.I.T.T. experience, turn your phone sideways.</span>
+        </div>
+      </div>
+
+      <div id="loading">
+        <div class="load-inner">
+          <div class="load-scanner"><i></i></div>
+          <div class="load-text">INITIALIZING K.I.T.T.<span class="dots">...</span></div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
