@@ -29,6 +29,12 @@
         </div>
 
         <div class="hud-top-right">
+          <div id="perf-pill" class="perf-pill" aria-live="off">
+            <span class="perf-led"></span>
+            <b id="perf-fps">60</b><span class="perf-unit">FPS</span>
+            <i class="perf-sep"></i>
+            <span id="perf-quality">HIGH</span>
+          </div>
           <div id="wanted" class="wanted" aria-label="Wanted level">
             <span class="star" data-i="0">★</span><span class="star" data-i="1">★</span><span class="star" data-i="2">★</span><span class="star" data-i="3">★</span><span class="star" data-i="4">★</span>
           </div>
@@ -120,6 +126,7 @@
           <p class="title-pitch">Seven electric machines. One city that never sleeps. Run the courier circuit, collect data shards, and outrun the APEX patrol through a reimagined San Andreas.</p>
           <div class="title-actions">
             <button id="play-btn" class="play-btn" aria-label="Play"><span>PLAY</span><small>ENTER THE CITY</small></button>
+            <button id="title-graphics" class="ghost-btn" aria-label="Graphics settings"><span>GRAPHICS</span><small>PRO VISUALS</small></button>
           </div>
           <div class="title-controls">
             <div><kbd>W A S D</kbd><span>DRIVE / MOVE</span></div>
@@ -136,6 +143,130 @@
           <div class="title-stat"><b>25</b><span>CITY BLOCKS</span></div>
           <div class="title-stat"><b>∞</b><span>FREE ROAM</span></div>
           <div class="title-fine">A FAN-MADE THREE.JS TRIBUTE · NOT AFFILIATED WITH ROCKSTAR GAMES</div>
+        </div>
+      </div>
+
+      <div id="pause" class="pause-screen" aria-hidden="true">
+        <div class="pause-panel">
+          <div class="pause-eyebrow"><span class="live-dot"></span> SESSION HELD · LOS SANTOS 2026</div>
+          <h2 class="pause-title">PAUSED</h2>
+          <div class="pause-sub">NEON STATE · FREE ROAM</div>
+          <div class="pause-actions">
+            <button id="resume-btn" class="pause-btn primary">
+              <span>RESUME</span><small>ESC</small>
+            </button>
+            <button id="pause-graphics" class="pause-btn">
+              <span>GRAPHICS</span><small>DISPLAY &amp; POST FX</small>
+            </button>
+            <button id="quit-title" class="pause-btn danger">
+              <span>QUIT TO TITLE</span><small>END SESSION</small>
+            </button>
+          </div>
+          <div class="pause-foot">
+            <span>PROGRESS HELD</span>
+            <span>APEX PATROL STANDBY</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="graphics" class="graphics-screen" aria-hidden="true">
+        <div class="gx-shell" role="dialog" aria-modal="true" aria-labelledby="gx-heading">
+          <header class="gx-head">
+            <div class="gx-heading">
+              <div class="gx-kicker">DISPLAY &amp; POST FX</div>
+              <h2 id="gx-heading">GRAPHICS</h2>
+            </div>
+            <div class="gx-head-right">
+              <div class="gx-current-wrap">MODE <b id="gx-current">HIGH</b></div>
+              <button id="gx-close" class="gx-close" aria-label="Close graphics settings">×</button>
+            </div>
+          </header>
+
+          <div class="gx-grid">
+            <aside class="gx-presets">
+              <div class="gx-label">QUALITY PRESET</div>
+              <button class="gx-preset" data-preset="performance">
+                <span class="gx-preset-top"><b>PERFORMANCE</b><em>MAX FPS</em></span>
+                <small>70% render · post FX off</small>
+              </button>
+              <button class="gx-preset" data-preset="balanced">
+                <span class="gx-preset-top"><b>BALANCED</b><em>RECOMMENDED</em></span>
+                <small>85% render · soft bloom</small>
+              </button>
+              <button class="gx-preset" data-preset="high">
+                <span class="gx-preset-top"><b>HIGH</b><em>NEXT-GEN</em></span>
+                <small>full render · bloom + grain</small>
+              </button>
+              <button class="gx-preset" data-preset="ultra">
+                <span class="gx-preset-top"><b>ULTRA</b><em>SHOWCASE</em></span>
+                <small>full render · heavy bloom</small>
+              </button>
+              <div class="gx-save-note"><span class="live-dot"></span> AUTO-SAVED LOCALLY</div>
+            </aside>
+
+            <section class="gx-controls">
+              <div class="gx-row">
+                <div class="gx-copy">
+                  <label for="gx-scale">RENDER SCALE</label>
+                  <small>Resolution multiplier. Lower is faster.</small>
+                </div>
+                <input id="gx-scale" class="gx-range" type="range" min="50" max="100" step="5" value="100" />
+                <output id="gx-scale-out" class="gx-value">100%</output>
+              </div>
+
+              <div class="gx-row">
+                <div class="gx-copy">
+                  <label for="gx-bloom">UNREAL BLOOM</label>
+                  <small>Neon bleed on lights, paint and signs.</small>
+                </div>
+                <button id="gx-bloom" class="gx-switch" role="switch" aria-checked="true" aria-label="Bloom"><span></span></button>
+              </div>
+
+              <div id="gx-bloom-strength-row" class="gx-row">
+                <div class="gx-copy">
+                  <label for="gx-bloom-strength">BLOOM STRENGTH</label>
+                  <small>Glow intensity across the whole frame.</small>
+                </div>
+                <input id="gx-bloom-strength" class="gx-range" type="range" min="0" max="120" step="2" value="62" />
+                <output id="gx-bloom-out" class="gx-value">62%</output>
+              </div>
+
+              <div class="gx-row">
+                <div class="gx-copy">
+                  <label for="gx-grain">FILM GRAIN</label>
+                  <small>Animated 35mm texture and sensor noise.</small>
+                </div>
+                <button id="gx-grain" class="gx-switch" role="switch" aria-checked="true" aria-label="Film grain"><span></span></button>
+              </div>
+
+              <div class="gx-row">
+                <div class="gx-copy">
+                  <label for="gx-scanlines">CRT SCANLINES</label>
+                  <small>Subtle display lines over the render.</small>
+                </div>
+                <button id="gx-scanlines" class="gx-switch" role="switch" aria-checked="true" aria-label="Scanlines"><span></span></button>
+              </div>
+
+              <div class="gx-row">
+                <div class="gx-copy">
+                  <label for="gx-fps-toggle">FPS READOUT</label>
+                  <small>Live performance pill above the HUD.</small>
+                </div>
+                <button id="gx-fps-toggle" class="gx-switch" role="switch" aria-checked="true" aria-label="FPS readout"><span></span></button>
+              </div>
+
+              <div class="gx-actions">
+                <button id="gx-reset" class="gx-btn ghost">RESET DEFAULTS</button>
+                <button id="gx-done" class="gx-btn solid">DONE</button>
+              </div>
+            </section>
+          </div>
+
+          <footer class="gx-foot">
+            <span id="gx-device">8-CORE CPU · 1× DPR</span>
+            <span id="gx-fps">60 FPS</span>
+            <span class="gx-foot-note">CHANGES APPLY INSTANTLY · ESC TO CLOSE</span>
+          </footer>
         </div>
       </div>
 
@@ -158,6 +289,7 @@
         <div class="end-sub">$250 HOSPITAL FEE · RESPAWNING</div>
       </div>
 
+      <div class="grain" aria-hidden="true"></div>
       <div class="scanlines" aria-hidden="true"></div>
       <div id="loading" class="loading"><div class="load-mark"></div><span>BUILDING THE CITY</span></div>
     </div>

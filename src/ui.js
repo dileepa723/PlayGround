@@ -34,12 +34,18 @@ export class UI {
       joystick: $('joystick'), stick: document.querySelector('#joystick .stick'),
       loading: $('loading'), flash: $('flash'), busted: $('busted'), wasted: $('wasted'),
       cinematic: $('cinematic'), cineTitle: $('cine-title'), cineSub: $('cine-sub'),
+      pause: $('pause'), resumeBtn: $('resume-btn'), pauseGraphics: $('pause-graphics'), quitTitle: $('quit-title'),
+      titleGraphics: $('title-graphics'),
     }
     this.cache = {}
     this.touch = { x: 0, y: 0, gas: false, brake: false, boost: false, handbrake: false }
     this.onAction = null
     this.onMute = null
     this.onPlay = null
+    this.onResume = null
+    this.onGraphics = null
+    this.onTitleGraphics = null
+    this.onQuit = null
     this.missionDistance = 0
     this.mapCanvas = document.createElement('canvas')
     this.mapCanvas.width = 512
@@ -68,6 +74,11 @@ export class UI {
       this.el.mute.textContent = muted ? '×' : '♪'
       this.onMute?.(muted)
     })
+
+    this.el.resumeBtn.addEventListener('click', () => this.onResume?.())
+    this.el.pauseGraphics.addEventListener('click', () => this.onGraphics?.())
+    this.el.quitTitle.addEventListener('click', () => this.onQuit?.())
+    this.el.titleGraphics.addEventListener('click', () => this.onTitleGraphics?.())
 
     const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window
     this.isTouch = isTouch
@@ -222,6 +233,14 @@ export class UI {
     document.body.classList.toggle('title-mode', !isPlaying)
     if (isPlaying) this.el.title.classList.add('gone')
     else this.el.title.classList.remove('gone')
+    if (!isPlaying) this.setPaused(false)
+  }
+
+  setPaused(paused) {
+    this.paused = paused
+    document.body.classList.toggle('paused', paused)
+    this.el.pause.classList.toggle('show', paused)
+    this.el.pause.setAttribute('aria-hidden', String(!paused))
   }
 
   update(state) {

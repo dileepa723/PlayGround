@@ -1,9 +1,14 @@
 import * as THREE from 'three'
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 import { createWorld, CITY } from './city.js'
 import { VEHICLE_TYPES, buildVehicle, addVehicleLabel, updateVehicleVisuals } from './vehicles.js'
 import { createCharacter, createPedestrian, animateCharacter } from './player.js'
 import { UI } from './ui.js'
 import { GameAudio } from './audio.js'
+import { GraphicsSettings, GraphicsPanel, PRESETS } from './graphics.js'
 import { clamp, damp, lerp, makeRng, glowTexture, canvas2d, canvasTexture } from './utils.js'
 
 const stage = document.getElementById('stage')
@@ -33,11 +38,61 @@ stage.appendChild(renderer.domElement)
 const world = createWorld(scene, renderer)
 ui.buildMap(world)
 
+/* --------------------------------------------------------------- graphics */
+
+const graphics = new GraphicsSettings()
+const composer = new EffectComposer(renderer)
+composer.renderTarget1.samples = 4
+composer.renderTarget2.samples = 4
+const renderPass = new RenderPass(scene, camera)
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), graphics.get('bloomStrength'), 0.62, 0.76)
+const outputPass = new OutputPass()
+composer.addPass(renderPass)
+composer.addPass(bloomPass)
+composer.addPass(outputPass)
+
+const perfFpsEl = document.getElementById('perf-fps')
+const perfQualityEl = document.getElementById('perf-quality')
+let appliedPixelRatio = -1
+
+function qualityLabel() {
+  const preset = PRESETS[graphics.get('preset')]
+  return preset ? preset.label : 'CUSTOM'
+}
+
+function applyGraphics() {
+  const scale = graphics.get('renderScale')
+  const base = Math.min(window.devicePixelRatio || 1, 1.65)
+  const pixelRatio = Math.max(0.5, base * scale)
+  if (Math.abs(pixelRatio - appliedPixelRatio) > 0.001) {
+    appliedPixelRatio = pixelRatio
+    renderer.setPixelRatio(pixelRatio)
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    composer.setPixelRatio(pixelRatio)
+    composer.setSize(window.innerWidth, window.innerHeight)
+  }
+  bloomPass.strength = graphics.get('bloomStrength')
+  bloomPass.enabled = graphics.get('bloom')
+  document.body.classList.toggle('no-grain', !graphics.get('grain'))
+  document.body.classList.toggle('no-scanlines', !graphics.get('scanlines'))
+  document.body.classList.toggle('show-fps', !!graphics.get('showFps'))
+  if (perfQualityEl) perfQualityEl.textContent = qualityLabel()
+}
+
+const graphicsPanel = new GraphicsPanel(graphics, {
+  onOpen: () => audio.blip(740, 0.08, 0.03, 'triangle'),
+  onClose: () => audio.blip(420, 0.07, 0.025, 'triangle'),
+})
+
+graphics.onChange(() => applyGraphics())
+applyGraphics()
+
 /* ------------------------------------------------------------------ state */
 
 const state = {
   mode: 'foot', // foot | car | down
   playing: false,
+  paused: false,
   cash: 12450,
   health: 100,
   armor: 0,
@@ -606,9 +661,19 @@ function respawn() {
 
 window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase()
+  if (k === 'escape') {
+    e.preventDefault()
+    if (graphicsPanel.isOpen) {
+      graphicsPanel.close()
+      return
+    }
+    if (state.playing) setPaused(!state.paused)
+    return
+  }
   if (['w', 'a', 's', 'd', ' ', 'shift', 'e', 'm', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault()
   if (input.keys.has(k)) return
   input.keys.add(k)
+  if (state.paused) return
   if (k === 'e') interact()
   if (k === 'm') document.getElementById('mute-btn')?.click()
   if (k === ' ' && state.mode === 'foot') input.jumpQueued = true
@@ -623,7 +688,7 @@ window.addEventListener('keyup', (e) => input.keys.delete(e.key.toLowerCase()))
 window.addEventListener('blur', () => input.keys.clear())
 
 renderer.domElement.addEventListener('pointerdown', (e) => {
-  if (e.button !== 0) return
+  if (e.button !== 0 || state.paused) return
   cam.dragging = true
   cam.lastX = e.clientX
   cam.lastY = e.clientY
@@ -646,12 +711,13 @@ renderer.domElement.addEventListener('pointerup', endDrag)
 renderer.domElement.addEventListener('pointercancel', endDrag)
 renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault())
 renderer.domElement.addEventListener('wheel', (e) => {
+  if (state.paused) return
   cam.dist = clamp(cam.dist + Math.sign(e.deltaY) * 0.6, 5.2, 13)
   e.preventDefault()
 }, { passive: false })
 
 function interact() {
-  if (!state.playing || state.mode === 'down') return
+  if (!state.playing || state.paused || state.mode === 'down') return
   if (state.mode === 'car') {
     const v = state.activeVehicle
     if (v && Math.abs(v.speed) > 7) {
