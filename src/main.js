@@ -17,6 +17,7 @@ const pauseScreen = $("pauseScreen");
 const overScreen = $("overScreen");
 const hud = $("hud");
 const touchControls = $("touchControls");
+const rotateHint = $("rotateHint");
 const loading = $("loading");
 const toastStack = $("toastStack");
 const targetLock = $("targetLock");
@@ -179,6 +180,10 @@ function initScene() {
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
   }
+}
+
+function updateRotateHint() {
+  rotateHint.classList.toggle("hidden", !isTouch || !matchMedia("(orientation: portrait)").matches);
 }
 
 function formatTime(seconds) {
@@ -427,6 +432,7 @@ function toggleSound() {
 }
 
 function onResize() {
+  updateRotateHint();
   if (!renderer) return;
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -501,9 +507,11 @@ function animate() {
 async function boot() {
   try {
     await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]);
+    updateRotateHint();
     initScene();
     bindInput();
     window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", updateRotateHint);
     $("startBtn").addEventListener("click", () => {
       if (audio) audio.click();
       startRun();
